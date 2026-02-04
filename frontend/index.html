@@ -220,43 +220,33 @@
 
                 <div class="technical-content">
                     <div class="tech-stack-section">
-                        <h4><i class="fa-solid fa-cubes"></i> Tech Stack</h4>
-                        <div class="tech-stack-options hidden" id="tech-stack-options">
-                            <label class="tech-option">
-                                <input type="radio" name="tech-stack" value="html_single">
-                                <span class="tech-option-content">
-                                    <strong>HTML Single</strong>
-                                    <small>One file with embedded CSS/JS</small>
-                                </span>
-                            </label>
-                            <label class="tech-option">
-                                <input type="radio" name="tech-stack" value="html_multi">
-                                <span class="tech-option-content">
-                                    <strong>HTML Multi</strong>
-                                    <small>Multiple pages with shared CSS</small>
-                                </span>
-                            </label>
-                            <label class="tech-option">
-                                <input type="radio" name="tech-stack" value="react_cdn">
-                                <span class="tech-option-content">
-                                    <strong>React CDN</strong>
-                                    <small>React via CDN scripts</small>
-                                </span>
-                            </label>
-                            <label class="tech-option">
-                                <input type="radio" name="tech-stack" value="vue_cdn">
-                                <span class="tech-option-content">
-                                    <strong>Vue CDN</strong>
-                                    <small>Vue via CDN scripts</small>
-                                </span>
-                            </label>
+                        <h4><i class="fa-solid fa-cubes"></i> Tech Stack
+                            <span class="editable-badge hidden" id="techstack-editable-badge">Editable</span>
+                        </h4>
+
+                        <!-- Editable Tech Stack (shown during approval) -->
+                        <div class="tech-stack-edit hidden" id="tech-stack-edit">
+                            <div class="tech-input-group">
+                                <label>Describe your preferred technology stack</label>
+                                <input type="text" id="tech-stack-input"
+                                    placeholder="e.g., HTML/CSS/JS frontend with Python Flask backend...">
+                            </div>
                         </div>
+
+                        <!-- Read-only display (before approval stage) -->
                         <div class="tech-badge" id="tech-stack-value">—</div>
                     </div>
+
                     <div class="files-section">
-                        <h4><i class="fa-solid fa-folder-tree"></i> File Structure</h4>
+                        <h4><i class="fa-solid fa-folder-tree"></i> File Structure
+                            <span class="editable-badge hidden" id="files-editable-badge">Editable</span>
+                            <button class="add-feature-btn hidden" id="add-file-btn">
+                                <i class="fa-solid fa-plus"></i> Add File
+                            </button>
+                        </h4>
                         <ul class="file-tree" id="file-tree"></ul>
                     </div>
+
                     <div class="assets-section">
                         <h4><i class="fa-solid fa-puzzle-piece"></i> Dependencies</h4>
                         <div class="assets-list" id="assets-list">

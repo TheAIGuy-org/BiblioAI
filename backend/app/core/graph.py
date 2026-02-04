@@ -18,6 +18,7 @@ from app.nodes.checkpoints import (
 from app.nodes.builder import builder_node
 from app.nodes.syntax_guard import syntax_guard_node, should_retry_after_syntax
 from app.nodes.auditor import auditor_node, should_retry_after_audit
+from app.nodes.dependency_analyzer import dependency_analyzer_node
 from app.nodes.packager import packager_node
 from app.utils.logger import get_logger
 
@@ -56,6 +57,7 @@ def create_builder_graph() -> StateGraph:
     workflow.add_node("builder", builder_node)
     workflow.add_node("syntax_guard", syntax_guard_node)
     workflow.add_node("auditor", auditor_node)
+    workflow.add_node("dependency_analyzer", dependency_analyzer_node)
     workflow.add_node("packager", packager_node)
     
     # Set entry point
@@ -95,17 +97,19 @@ def create_builder_graph() -> StateGraph:
         }
     )
     
-    # Conditional: Auditor can retry Builder
+    # Conditional: Auditor can retry Builder OR proceed to dependency analysis
+    # NOTE: When auditor returns "packager", we intercept it and send to "dependency_analyzer" first
     workflow.add_conditional_edges(
         "auditor",
         should_retry_after_audit,
         {
             "builder": "builder",
-            "packager": "packager"
+            "packager": "dependency_analyzer"
         }
     )
     
-    # Packager → END
+    # Dependency Analyzer → Packager → END
+    workflow.add_edge("dependency_analyzer", "packager")
     workflow.add_edge("packager", END)
     
     return workflow.compile()
@@ -122,6 +126,7 @@ def create_phase2_graph() -> StateGraph:
     workflow.add_node("builder", builder_node)
     workflow.add_node("syntax_guard", syntax_guard_node)
     workflow.add_node("auditor", auditor_node)
+    workflow.add_node("dependency_analyzer", dependency_analyzer_node)
     workflow.add_node("packager", packager_node)
     
     workflow.set_entry_point("techstack_checkpoint")
@@ -146,10 +151,11 @@ def create_phase2_graph() -> StateGraph:
         should_retry_after_audit,
         {
             "builder": "builder",
-            "packager": "packager"
+            "packager": "dependency_analyzer"
         }
     )
     
+    workflow.add_edge("dependency_analyzer", "packager")
     workflow.add_edge("packager", END)
     
     return workflow.compile()
@@ -165,6 +171,7 @@ def create_phase3_graph() -> StateGraph:
     workflow.add_node("builder", builder_node)
     workflow.add_node("syntax_guard", syntax_guard_node)
     workflow.add_node("auditor", auditor_node)
+    workflow.add_node("dependency_analyzer", dependency_analyzer_node)
     workflow.add_node("packager", packager_node)
     
     workflow.set_entry_point("builder")
@@ -185,10 +192,11 @@ def create_phase3_graph() -> StateGraph:
         should_retry_after_audit,
         {
             "builder": "builder",
-            "packager": "packager"
+            "packager": "dependency_analyzer"
         }
     )
     
+    workflow.add_edge("dependency_analyzer", "packager")
     workflow.add_edge("packager", END)
     
     return workflow.compile()

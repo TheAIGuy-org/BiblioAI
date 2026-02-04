@@ -73,13 +73,13 @@ Building web applications typically requires:
 
 ## 💡 Our Solution
 
-BiblioAI solves these problems through a **6-stage autonomous pipeline** powered by LangGraph:
+BiblioAI solves these problems through a **7-stage autonomous pipeline** powered by LangGraph:
 
 ```
-┌─────────────┐    ┌───────────┐    ┌──────────┐    ┌──────────────┐    ┌──────────┐    ┌───────────┐
-│  Gatekeeper │───►│ Architect │───►│  Builder │───►│ Syntax Guard │───►│  Auditor │───►│  Packager │
-│   (Filter)  │    │ (Design)  │    │ (Code)   │    │ (Validate)   │    │ (Verify) │    │ (Deliver) │
-└─────────────┘    └───────────┘    └──────────┘    └──────────────┘    └──────────┘    └───────────┘
+┌─────────────┐    ┌───────────┐    ┌──────────┐    ┌──────────────┐    ┌──────────┐    ┌──────────────┐    ┌───────────┐
+│  Gatekeeper │───►│ Architect │───►│  Builder │───►│ Syntax Guard │───►│  Auditor │───►│ Dep Analyzer │───►│  Packager │
+│   (Filter)  │    │ (Design)  │    │ (Code)   │    │ (Validate)   │    │ (Verify) │    │ (Integrate)  │    │ (Deliver) │
+└─────────────┘    └───────────┘    └──────────┘    └──────────────┘    └──────────┘    └──────────────┘    └───────────┘
       │                                    ▲               │                  │
       │                                    │               │                  │
       │                                    └───────────────┴──────────────────┘
@@ -116,7 +116,7 @@ BiblioAI solves these problems through a **6-stage autonomous pipeline** powered
 
 ---
 
-## 🔄 The 6-Node Pipeline
+## 🔄 The 7-Node Pipeline
 
 ### Node 1: Scope Gatekeeper
 **Model:** `llama-3.3-70b-versatile` @ Temperature 0.0
@@ -203,7 +203,26 @@ Purpose: Semantic verification
 
 ---
 
-### Node 6: The Packager
+
+---
+
+### Node 6: Dependency Analyzer
+**Deterministic Rule-Based Engine**
+
+```
+Purpose: Integration & Dependency Management
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Scans code for imports/requires
+✓ Generates requirements.txt / package.json
+✓ Validates frontend-backend integration
+✓ Ensures API calls exist in frontend logic
+```
+
+**Output:** Updated file set with dependency files
+
+---
+
+### Node 7: The Packager
 **Pure Python**
 
 ```

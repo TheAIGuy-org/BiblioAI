@@ -59,7 +59,20 @@ This is NOT a suggestion - the user CONFIRMED they want EXACTLY this.
 Return ONLY the raw code for the requested file.
 - No markdown code blocks (no ```html```)
 - No explanations before or after
-- Just pure code that can be directly saved to a file"""
+- Just pure code that can be directly saved to a file
+
+════════════════════════════════════════════════════════════════
+                CHAIN OF THOUGHT PLANNING (INTERNAL)
+════════════════════════════════════════════════════════════════
+
+Before generating code, you MUST mentally perform these steps:
+1. ANALYZE context: What is this file's role? (e.g., "This is the frontend that calls the backend")
+2. CHECK INTEGRATION: 
+   - If I am `index.html`, where is `app.py` serving me? What API endpoints exist?
+   - If I am `app.py`, what static files do I need to serve?
+3. PLAN STRUCTURE: Defined imports, classes, and functions required by features.
+4. EXECUTE: Write the code based on the strict analysis.
+"""
 
 
 BUILDER_FEATURE_EMPHASIS = """
@@ -105,6 +118,25 @@ BUILDER_TECHSTACK_EMPHASIS = """
 
 Tech Stack: {tech_stack}
 Approach: {approach_description}
+
+CRITICAL INTEGRATION RULES (STRICT COMPLIANCE REQUIRED):
+
+1. IF FULLSTACK (Python Backend + HTML Frontend):
+   - **BACKEND (app.py/main.py)**: 
+     - MUST serve `index.html` at the root URL (`/`).
+     - MUST serve static files (css/js) correctly.
+     - MUST enable CORS (Cross-Origin Resource Sharing).
+     - Example Flask: `@app.route('/') def index(): return send_from_directory('.', 'index.html')`
+     - Example FastAPI: `app.mount("/static", StaticFiles(...))` AND root route returning FileResponse('index.html').
+   
+   - **FRONTEND (index.html/script.js)**:
+     - MUST use RELATIVE URLs for API calls (e.g., `fetch('/api/tasks')`, NOT `fetch('http://localhost:5000/...')`).
+     - MUST NOT use hardcoded localhost ports.
+     - MUST NOT contain business logic (calculation, filtering) - call the API!
+
+2. IF FRONTEND-ONLY:
+   - All logic must be in the browser (JS).
+   - No server-side calls unless using external public APIs.
 
 This is the user's CHOSEN technology - use it correctly.
 """
@@ -225,6 +257,7 @@ def build_code_generation_prompt(
     approved_features: list = None,
     approved_design_specs: dict = None,
     approved_tech_stack: str = None,
+    approved_file_structure: list = None,
     user_requirements: str = None,
     # Retry context
     syntax_errors: list = None
@@ -297,20 +330,46 @@ def build_code_generation_prompt(
     tech_stack_text = ""
     if approved_tech_stack:
         approach_map = {
+            # Frontend-only stacks
             "html_single": "Single HTML file with embedded CSS and JavaScript. Everything in one file.",
             "html_multi": "Multiple HTML files with shared CSS. Navigation between pages.",
             "react_cdn": "React application loaded via CDN. Use React.createElement or JSX via Babel.",
-            "vue_cdn": "Vue application loaded via CDN. Use Vue's template syntax."
+            "vue_cdn": "Vue application loaded via CDN. Use Vue's template syntax.",
+            # Python backend stacks
+            "python_flask": "Python Flask backend with REST API. Include requirements.txt with all dependencies.",
+            "python_fastapi": "Python FastAPI backend with async endpoints. Include requirements.txt with all dependencies.",
+            # Node.js backend stacks
+            "node_express": "Node.js Express backend. Include package.json with all dependencies and npm scripts.",
+            # Fullstack stacks
+            "fullstack_python": "Full-stack app with HTML frontend and Python Flask/FastAPI backend. Include requirements.txt.",
+            "fullstack_node": "Full-stack app with HTML frontend and Node.js Express backend. Include package.json."
         }
         tech_stack_text = BUILDER_TECHSTACK_EMPHASIS.format(
             tech_stack=approved_tech_stack,
-            approach_description=approach_map.get(approved_tech_stack, approved_tech_stack)
+            approach_description=approach_map.get(approved_tech_stack, f"Custom stack: {approved_tech_stack}. Generate appropriate files based on the user's description.")
         )
     
     # Format user requirements
     requirements_text = ""
     if user_requirements and user_requirements.strip():
         requirements_text = BUILDER_USER_REQUIREMENTS.format(user_requirements=user_requirements)
+
+    # Format file structure context (CoT enabler)
+    file_context_text = ""
+    if approved_file_structure:
+        file_list = "\n".join([f"- {f['name']} ({f.get('purpose', 'file')})" for f in approved_file_structure])
+        file_context_text = f"""
+╔══════════════════════════════════════════════════════════════╗
+║        📁  PROJECT FILE CONTEXT (The Full Picture)           ║
+╚══════════════════════════════════════════════════════════════╝
+
+You are building ONE file in this larger project:
+{file_list}
+
+INTEGRATION REMINDER:
+- Check the list above. If you are building the frontend, look for the backend file.
+- If you are building the backend, remember to serve the frontend file.
+"""
     
     # Format retry context
     retry_context = ""
@@ -334,6 +393,7 @@ The previous code had these issues. Fix them in this version:
 {features_text}
 {design_text}
 {tech_stack_text}
+{file_context_text}
 {requirements_text}
 
 ════════════════════════════════════════════════════════════════

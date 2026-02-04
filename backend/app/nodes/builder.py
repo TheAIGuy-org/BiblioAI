@@ -86,6 +86,7 @@ def builder_node(state: BuilderState) -> BuilderState:
                 approved_features=state.get("approved_features"),
                 approved_design_specs=state.get("approved_design_specs"),
                 approved_tech_stack=state.get("approved_tech_stack"),
+                approved_file_structure=file_structure, # Pass full structure context
                 user_requirements=state.get("user_requirements"),
                 # Retry context
                 syntax_errors=state["syntax_errors"] if state["retry_count"] > 0 else None

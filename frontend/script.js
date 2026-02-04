@@ -261,17 +261,120 @@ function showFeatureApprovalUI() {
 function showTechstackApprovalUI() {
     elements.techstackApprovalBanner?.classList.remove('hidden');
     elements.techstackApprovalActions?.classList.remove('hidden');
-    elements.techStackOptions?.classList.remove('hidden');
 
-    // Pre-select current tech stack
-    const currentStack = blueprintData.tech_stack;
-    if (currentStack) {
-        const radio = document.querySelector(`input[name="tech-stack"][value="${currentStack}"]`);
-        if (radio) radio.checked = true;
+    // Show editable section
+    const techStackEdit = document.getElementById('tech-stack-edit');
+    const techStackInput = document.getElementById('tech-stack-input');
+    const techStackBadge = document.getElementById('techstack-editable-badge');
+    const filesEditableBadge = document.getElementById('files-editable-badge');
+    const addFileBtn = document.getElementById('add-file-btn');
+
+    techStackEdit?.classList.remove('hidden');
+    techStackBadge?.classList.remove('hidden');
+    filesEditableBadge?.classList.remove('hidden');
+    addFileBtn?.classList.remove('hidden');
+
+    // Pre-fill with current tech stack
+    if (techStackInput && blueprintData.tech_stack) {
+        techStackInput.value = blueprintData.tech_stack;
     }
+
+    // Make file structure editable
+    renderEditableFileStructure();
+
+    // Setup add file button handler
+    addFileBtn?.addEventListener('click', addNewFile);
 
     updateProgress('techstack_approval_checkpoint');
     switchTab('technical');
+}
+
+function renderEditableFileStructure() {
+    const fileTree = document.getElementById('file-tree');
+    if (!fileTree || !blueprintData.file_structure) return;
+
+    fileTree.innerHTML = '';
+    blueprintData.file_structure.forEach((file, index) => {
+        const li = document.createElement('li');
+        li.className = 'editable-file-item';
+        li.dataset.index = index;
+        li.innerHTML = `
+            <i class="fa-solid ${getFileIcon(file.type)}"></i>
+            <input type="text" class="file-name-input" value="${file.name}" placeholder="filename.ext">
+            <input type="text" class="file-purpose-input" value="${file.purpose || ''}" placeholder="File purpose...">
+            <button type="button" class="remove-file-btn" onclick="removeFile(${index})">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        fileTree.appendChild(li);
+    });
+}
+
+function addNewFile() {
+    const fileTree = document.getElementById('file-tree');
+    if (!fileTree) return;
+
+    const index = fileTree.children.length;
+    const li = document.createElement('li');
+    li.className = 'editable-file-item';
+    li.dataset.index = index;
+    li.innerHTML = `
+        <i class="fa-solid fa-file-code"></i>
+        <input type="text" class="file-name-input" value="" placeholder="filename.ext">
+        <input type="text" class="file-purpose-input" value="" placeholder="File purpose...">
+        <button type="button" class="remove-file-btn" onclick="removeFile(${index})">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    `;
+    fileTree.appendChild(li);
+
+    // Focus on the name input
+    li.querySelector('.file-name-input')?.focus();
+    addLog('📄 New file added - enter name and purpose', 'info');
+}
+
+function removeFile(index) {
+    const fileTree = document.getElementById('file-tree');
+    const items = fileTree?.querySelectorAll('.editable-file-item');
+    if (items && items[index]) {
+        items[index].remove();
+        addLog('🗑️ File removed', 'info');
+    }
+}
+
+function collectApprovedFileStructure() {
+    const items = document.querySelectorAll('.editable-file-item');
+    if (items.length === 0) {
+        return blueprintData.file_structure || [];
+    }
+
+    const files = [];
+    items.forEach(item => {
+        const nameInput = item.querySelector('.file-name-input');
+        const purposeInput = item.querySelector('.file-purpose-input');
+
+        if (nameInput && nameInput.value.trim()) {
+            files.push({
+                name: nameInput.value.trim(),
+                purpose: purposeInput?.value.trim() || '',
+                type: getFileTypeFromName(nameInput.value.trim())
+            });
+        }
+    });
+    return files.length > 0 ? files : blueprintData.file_structure || [];
+}
+
+function getFileTypeFromName(filename) {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    const typeMap = {
+        'html': 'page', 'htm': 'page',
+        'css': 'stylesheet',
+        'js': 'script',
+        'py': 'script',
+        'json': 'data',
+        'md': 'documentation'
+    };
+    return typeMap[ext] || 'file';
 }
 
 async function approveFeatures() {
@@ -320,9 +423,10 @@ async function approveTechstack() {
 
     addLog('Submitting tech stack approval...', 'info');
 
-    // Collect approved tech stack
-    const selectedStack = document.querySelector('input[name="tech-stack"]:checked')?.value || blueprintData.tech_stack;
-    const approvedFileStructure = blueprintData.file_structure;
+    // Collect approved tech stack from input field
+    const techStackInput = document.getElementById('tech-stack-input');
+    const selectedStack = techStackInput?.value.trim() || blueprintData.tech_stack;
+    const approvedFileStructure = collectApprovedFileStructure();
     const approvedAssetManifest = blueprintData.asset_manifest;
     const userRequirements = elements.userRequirementsInput?.value.trim() || null;
 

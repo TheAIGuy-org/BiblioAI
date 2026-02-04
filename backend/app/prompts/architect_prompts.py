@@ -9,7 +9,7 @@ Your ONLY job is to create a COMPREHENSIVE SPECIFICATION, NOT code. You decide:
 1. Project Features - What the project should DO (core vs enhancement features)
 2. Design Specifications - How it should LOOK and FEEL
 3. Tech Stack - What technology to use
-4. File Structure - What files are needed
+4. File Structure - What files are needed (INCLUDING dependency files)
 5. Asset Manifest - External dependencies (CDN links)
 
 ## FEATURE PLANNING (MOST IMPORTANT)
@@ -30,12 +30,34 @@ Define the visual identity:
 - **Animations**: Micro-interactions (e.g., "Smooth hover effects, subtle transitions")
 
 ## TECH STACK RULES
-- html_single: Use for simple apps (calculator, todo, single-page games) - ONE index.html file
-- html_multi: Use for multi-page sites (portfolio, documentation) - Multiple HTML files
-- react_cdn: Use ONLY if user explicitly mentions React
-- vue_cdn: Use ONLY if user explicitly mentions Vue
+Choose based on user requirements:
+- **html_single**: Simple apps (calculator, todo) - ONE index.html file
+- **html_multi**: Multi-page sites (portfolio, docs) - Multiple HTML files
+- **react_cdn**: React apps via CDN
+- **vue_cdn**: Vue apps via CDN
+- **python_flask**: Python backend with Flask (include requirements.txt)
+- **python_fastapi**: Python backend with FastAPI (include requirements.txt)
+- **node_express**: Node.js backend with Express (include package.json)
+- **fullstack_python**: Frontend + Python backend (HTML + Flask/FastAPI)
+- **fullstack_node**: Frontend + Node.js backend (HTML + Express)
+
+## DEPENDENCY FILES (CRITICAL)
+ALWAYS include dependency files when using backend technologies:
+
+For Python projects (flask, fastapi, fullstack_python):
+- Include `requirements.txt` with ALL needed packages and versions
+
+For Node.js projects (node_express, fullstack_node):
+- Include `package.json` with name, version, scripts, and dependencies
 
 OPTIMIZATION PRINCIPLE: Always prefer the SIMPLEST stack that meets requirements.
+
+## API CONTRACT (FOR FULLSTACK ONLY)
+If creating a Fullstack app:
+1. **Explicitly list API endpoints** in BOTH the backend and frontend file prompts.
+2. Example Backend Prompt: "Create Flask app with routes: GET /api/todos, POST /api/todos."
+3. Example Frontend Prompt: "Fetch data from GET /api/todos and submit to POST /api/todos."
+4. Ensure they MATCH perfectly.
 
 ## OUTPUT FORMAT (JSON only)
 {
@@ -53,13 +75,19 @@ OPTIMIZATION PRINCIPLE: Always prefer the SIMPLEST stack that meets requirements
     "layout": "Page structure and component arrangement",
     "animations": "Motion design and micro-interactions"
   },
-  "tech_stack": "html_single | html_multi | react_cdn | vue_cdn",
+  "tech_stack": "html_single | html_multi | react_cdn | vue_cdn | python_flask | python_fastapi | node_express | fullstack_python | fullstack_node",
   "file_structure": [
     {
       "name": "index.html",
       "type": "html",
       "purpose": "Main application file",
       "prompt": "Detailed instruction for the builder about this specific file"
+    },
+    {
+      "name": "requirements.txt",
+      "type": "dependencies",
+      "purpose": "Python package dependencies",
+      "prompt": "List all required Python packages with versions (e.g., flask>=3.0.0)"
     }
   ],
   "asset_manifest": [
@@ -259,6 +287,66 @@ FEW_SHOT_EXAMPLES = [
             ],
             "asset_manifest": [],
             "reasoning": "Multi-page site needs separate HTML files for proper navigation and SEO. Shared CSS file maintains design consistency. Features include both core pages and UX enhancements."
+        }
+    },
+    {
+        "query": "Build a todo list app with Python Flask backend and HTML frontend",
+        "response": {
+            "project_features": [
+                {
+                    "name": "Task CRUD Operations",
+                    "description": "Create, read, update, and delete tasks with Flask REST API",
+                    "priority": "core",
+                    "user_benefit": "Manage your tasks with full control"
+                },
+                {
+                    "name": "Task Status Toggle",
+                    "description": "Mark tasks as complete/incomplete with visual feedback",
+                    "priority": "core",
+                    "user_benefit": "Track your progress easily"
+                },
+                {
+                    "name": "Persistent Storage",
+                    "description": "Tasks saved to SQLite database",
+                    "priority": "core",
+                    "user_benefit": "Your tasks survive page refreshes"
+                },
+                {
+                    "name": "Task Filtering",
+                    "description": "Filter by all/active/completed tasks",
+                    "priority": "enhancement",
+                    "user_benefit": "Focus on what matters now"
+                }
+            ],
+            "design_specs": {
+                "color_scheme": "Clean white background with green (#22c55e) for completed tasks",
+                "typography": "Inter for all text, clear hierarchy with size and weight",
+                "layout": "Centered card container with task list and input at top",
+                "animations": "Smooth checkbox transitions, fade on delete"
+            },
+            "tech_stack": "fullstack_python",
+            "file_structure": [
+                {
+                    "name": "app.py",
+                    "type": "python",
+                    "purpose": "Flask backend with REST API endpoints",
+                    "prompt": "Create Flask app with routes: GET /api/tasks, POST /api/tasks, PUT /api/tasks/<id>, DELETE /api/tasks/<id>. Use SQLite for storage. Include CORS support and serve static index.html."
+                },
+                {
+                    "name": "index.html",
+                    "type": "html",
+                    "purpose": "Frontend UI for todo app",
+                    "prompt": "Create responsive todo app UI. Include: task input form, task list with checkboxes, delete buttons, filter tabs. Use fetch API to communicate with Flask backend. Embed all CSS and JS."
+                },
+                {
+                    "name": "requirements.txt",
+                    "type": "dependencies",
+                    "purpose": "Python package dependencies",
+                    "prompt": "flask>=3.0.0\nflask-cors>=4.0.0\n\n# Include all packages needed to run the Flask app"
+                }
+            ],
+            "asset_manifest": [],
+            "reasoning": "Fullstack app with Python Flask backend for data persistence. requirements.txt ensures easy dependency installation with 'pip install -r requirements.txt'."
         }
     }
 ]
