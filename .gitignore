@@ -1,0 +1,37 @@
+# ------------------------
+# Python
+# ------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+backend/venv/
+
+# ------------------------
+# Environment Files
+# ------------------------
+.env
+backend/.env
+
+# Keep example env
+!.env.example
+
+# ------------------------
+# Project Specific
+# ------------------------
+# Output directories
+output/
+backend/output/
+
+# ------------------------
+# OS / Editor Files
+# ------------------------
+.DS_Store
+Thumbs.db
+
+# VSCode settings
+.vscode/
+``
