@@ -57,7 +57,8 @@ def dependency_analyzer_node(state: BuilderState) -> BuilderState:
     """
     logger.info("🔍 Dependency Analyzer (LLM): Starting analysis...")
     
-    generated_files = state.get("generated_files", {})
+    # FIX: The state uses "generated_code" not "generated_files"
+    generated_files = state.get("generated_code", {})
     
     if not generated_files:
         logger.warning("No generated files to analyze")
@@ -72,7 +73,8 @@ def dependency_analyzer_node(state: BuilderState) -> BuilderState:
         files_context += content[:15000] # Limit char count just in case
         files_context += f"\n--- END OF FILE: {name} ---\n\n"
         
-    tech_stack = state.get("tech_stack", "unknown")
+    # Use APPROVED tech stack from user's checkpoint approval
+    tech_stack = state.get("approved_tech_stack") or state.get("tech_stack", "unknown")
     logger.info(f"📊 Analyzing dependencies for stack: {tech_stack}")
     
     # check for existing dependency files to avoid overwriting if they are already good? 
@@ -130,7 +132,7 @@ Return ONLY valid JSON.
         
         return {
             **state,
-            "generated_files": updated_files,
+            "generated_code": updated_files,  # FIX: Use correct field name
             "current_node": "dependency_analyzer",
             # We can store analysis if needed
             "dependency_analysis": {"generated": list(new_files.keys())}

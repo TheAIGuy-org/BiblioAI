@@ -42,12 +42,12 @@ class LLMFactory:
     
     @staticmethod
     def get_auditor_llm() -> BaseChatModel:
-        """Get LLM for The Auditor (critique and verification)."""
+        """Get LLM for The Auditor and Syntax Guard (validation and surgical fixes - needs high token limit for complete files)."""
         return ChatGroq(
             model=settings.AUDITOR_MODEL,
             temperature=settings.AUDITOR_TEMPERATURE,
             api_key=settings.GROQ_API_KEY,
-            max_tokens=2000
+            max_tokens=32000  # High limit to return complete fixed files
         )
 
 

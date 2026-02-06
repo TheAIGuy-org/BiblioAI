@@ -47,9 +47,18 @@ class BuilderState(TypedDict):
     # ==================== EXECUTION (Code) ====================
     generated_code: Dict[str, str]  # {'index.html': '<html>...', 'app.js': '...'}
     
-    # ==================== AUDIT (Quality Control) ====================
-    syntax_errors: List[str]
-    semantic_issues: List[str]
+    # ==================== VALIDATION (Syntax Guard - LLM-powered) ====================
+    syntax_guard_validation: Optional[Dict[str, Any]]  # Complete validation result with COT
+    validation_issues: List[Dict[str, Any]]  # Issues found by Syntax Guard
+    validation_passed: bool  # True if no critical issues
+    
+    # ==================== CODE FIXING (Auditor = Code Surgeon) ====================
+    code_fixes_applied: List[Dict[str, Any]]  # Surgical fixes made by Auditor
+    fix_summary: Optional[Dict[str, Any]]  # Summary of fixes
+    
+    # ==================== LEGACY FIELDS (kept for backward compatibility) ====================
+    syntax_errors: List[str]  # Old field - may be deprecated
+    semantic_issues: List[str]  # Old field - may be deprecated
     retry_count: int
     
     # ==================== OUTPUT ====================

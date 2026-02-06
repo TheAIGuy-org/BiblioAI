@@ -87,24 +87,22 @@ def create_builder_graph() -> StateGraph:
     # Builder → Syntax Guard
     workflow.add_edge("builder", "syntax_guard")
     
-    # Conditional: Syntax Guard can retry Builder
+    # Conditional: Syntax Guard routes to Auditor (if issues) or Dependency Analyzer (if clean)
     workflow.add_conditional_edges(
         "syntax_guard",
         should_retry_after_syntax,
         {
-            "builder": "builder",
-            "auditor": "auditor"
+            "auditor": "auditor",
+            "dependency_analyzer": "dependency_analyzer"
         }
     )
     
-    # Conditional: Auditor can retry Builder OR proceed to dependency analysis
-    # NOTE: When auditor returns "packager", we intercept it and send to "dependency_analyzer" first
+    # Auditor (Code Fixer) → Dependency Analyzer (always, no retries)
     workflow.add_conditional_edges(
         "auditor",
         should_retry_after_audit,
         {
-            "builder": "builder",
-            "packager": "dependency_analyzer"
+            "dependency_analyzer": "dependency_analyzer"
         }
     )
     
@@ -141,8 +139,8 @@ def create_phase2_graph() -> StateGraph:
         "syntax_guard",
         should_retry_after_syntax,
         {
-            "builder": "builder",
-            "auditor": "auditor"
+            "auditor": "auditor",
+            "dependency_analyzer": "dependency_analyzer"
         }
     )
     
@@ -150,8 +148,7 @@ def create_phase2_graph() -> StateGraph:
         "auditor",
         should_retry_after_audit,
         {
-            "builder": "builder",
-            "packager": "dependency_analyzer"
+            "dependency_analyzer": "dependency_analyzer"
         }
     )
     
@@ -182,8 +179,8 @@ def create_phase3_graph() -> StateGraph:
         "syntax_guard",
         should_retry_after_syntax,
         {
-            "builder": "builder",
-            "auditor": "auditor"
+            "auditor": "auditor",
+            "dependency_analyzer": "dependency_analyzer"
         }
     )
     
@@ -191,8 +188,7 @@ def create_phase3_graph() -> StateGraph:
         "auditor",
         should_retry_after_audit,
         {
-            "builder": "builder",
-            "packager": "dependency_analyzer"
+            "dependency_analyzer": "dependency_analyzer"
         }
     )
     
@@ -254,6 +250,14 @@ async def run_builder_pipeline(
         "user_requirements": None,
         # Execution fields
         "generated_code": {},
+        # NEW: Validation fields (Syntax Guard - LLM-powered)
+        "syntax_guard_validation": None,
+        "validation_issues": [],
+        "validation_passed": False,
+        # NEW: Code fixing fields (Auditor - surgical fixes)
+        "code_fixes_applied": [],
+        "fix_summary": None,
+        # Legacy validation fields
         "syntax_errors": [],
         "semantic_issues": [],
         "retry_count": 0,

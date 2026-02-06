@@ -53,13 +53,34 @@ def parse_llm_json(content: str) -> Dict[Any, Any]:
         return parsed
         
     except json.JSONDecodeError as e:
-        logger.error(f"[PARSER] Failed to parse JSON. Original content: {original_content[:200]}")
-        logger.error(f"[PARSER] Cleaned content: {content[:200]}")
+        logger.error(f"[PARSER] Failed to parse JSON. Original content: {original_content[:500]}")
+        logger.error(f"[PARSER] Cleaned content: {content[:500]}")
         logger.error(f"[PARSER] Error: {str(e)}")
         
-        # Last resort: try to find and parse the first complete JSON object
+        # Last resort: try to extract JSON with better matching
         try:
-            # Find all potential JSON objects
+            logger.warning("[PARSER] Attempting fallback extraction strategies...")
+            
+            # Strategy 1: Find balanced braces for complete objects
+            brace_count = 0
+            start_idx = content.find('{')
+            if start_idx != -1:
+                for i, char in enumerate(content[start_idx:], start=start_idx):
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            # Found complete JSON object
+                            potential_json = content[start_idx:i+1]
+                            try:
+                                parsed = json.loads(potential_json)
+                                logger.warning("[PARSER] Used balanced brace extraction")
+                                return parsed
+                            except:
+                                pass
+            
+            # Strategy 2: Try simple regex patterns
             objects = re.findall(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', content, re.DOTALL)
             for obj in objects:
                 try:
@@ -68,15 +89,23 @@ def parse_llm_json(content: str) -> Dict[Any, Any]:
                     return parsed
                 except:
                     continue
-        except:
-            pass
+                    
+        except Exception as fallback_error:
+            logger.error(f"[PARSER] Fallback extraction also failed: {str(fallback_error)}")
         
-        # If all else fails, raise the original error
-        raise json.JSONDecodeError(
-            f"Could not extract valid JSON from LLM response. Content: {original_content[:500]}",
-            original_content,
-            0
-        )
+        # If all else fails, return empty structure to prevent crashes
+        logger.error("[PARSER] Returning empty fallback structure")
+        return {
+            "fixes_applied": [],
+            "fixed_code": {},
+            "summary": {
+                "total_issues_fixed": 0,
+                "files_modified": [],
+                "files_unchanged": [],
+                "all_issues_resolved": False,
+                "error": "JSON parsing failed - LLM response was truncated or malformed"
+            }
+        }
 
 
 def validate_json_schema(data: dict, required_keys: list) -> bool:

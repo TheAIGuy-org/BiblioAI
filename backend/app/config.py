@@ -16,7 +16,8 @@ class Settings(BaseSettings):
     GATEKEEPER_MODEL: str = "llama-3.3-70b-versatile"
     ARCHITECT_MODEL: str = "llama-3.3-70b-versatile"
     BUILDER_MODEL: str = "openai/gpt-oss-120b"  # Groq's coding specialist
-    AUDITOR_MODEL: str = "llama-3.3-70b-versatile"
+    # AUDITOR_MODEL: str = "llama-3.3-70b-versatile"
+    AUDITOR_MODEL: str = "openai/gpt-oss-120b"
     
     # Rate Limiting
     BUILDER_COOLDOWN_SECONDS: int = 2
