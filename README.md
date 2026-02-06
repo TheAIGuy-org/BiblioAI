@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="Builder_Architecture.png" alt="BiblioAI Architecture" width="800"/>
-</p>
-
 <h1 align="center">🏗️ BiblioAI — Autonomous AI Web Project Builder</h1>
 
 <p align="center">
@@ -13,7 +9,6 @@
   <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white" alt="FastAPI"/>
   <img src="https://img.shields.io/badge/LangGraph-Workflow-FF6F00?logo=langchain&logoColor=white" alt="LangGraph"/>
   <img src="https://img.shields.io/badge/Groq-LLMs-00D4FF?logo=groq&logoColor=white" alt="Groq"/>
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
 </p>
 
 ---
@@ -32,7 +27,7 @@
 - [Configuration](#-configuration)
 - [How It Works](#-how-it-works)
 - [Contributing](#-contributing)
-- [License](#-license)
+
 
 ---
 
@@ -73,36 +68,29 @@ Building web applications typically requires:
 
 ## 💡 Our Solution
 
-BiblioAI solves these problems through a **7-stage autonomous pipeline** powered by LangGraph:
+BiblioAI solves these problems through a **Human-in-the-Loop (HITL) autonomous pipeline** powered by LangGraph:
 
 ```
-┌─────────────┐    ┌───────────┐    ┌──────────┐    ┌──────────────┐    ┌──────────┐    ┌──────────────┐    ┌───────────┐
-│  Gatekeeper │───►│ Architect │───►│  Builder │───►│ Syntax Guard │───►│  Auditor │───►│ Dep Analyzer │───►│  Packager │
-│   (Filter)  │    │ (Design)  │    │ (Code)   │    │ (Validate)   │    │ (Verify) │    │ (Integrate)  │    │ (Deliver) │
-└─────────────┘    └───────────┘    └──────────┘    └──────────────┘    └──────────┘    └──────────────┘    └───────────┘
-      │                                    ▲               │                  │
-      │                                    │               │                  │
-      │                                    └───────────────┴──────────────────┘
-      │                                           (Retry Loop on Errors)
-      ▼
-    [END] ◄── Rejected requests (PRODUCTION/MALICIOUS)
+┌─────────────┐    ┌───────────┐    ┌──────────┐    ┌─────────┐    ┌──────────────┐    ┌──────────┐    ┌──────────────┐    ┌───────────┐
+│  Gatekeeper │───►│ Architect │───►│ Approval │───►│ Tech    │───►│  Builder     │───►│ Syntax   │───►│  Auditor     │───►│  Packager │
+│   (Filter)  │    │ (Design)  │    │ (Feature)│    │ Stack   │    │ (Code)       │    │ Guard    │    │ (Verify)     │    │ (Deliver) │
+└─────────────┘    └───────────┘    └──────────┘    └─────────┘    └──────────────┘    └──────────┘    └──────────────┘    └───────────┘
+                                          │               │                 │                  │                  │
+                                     (User Edit)      (Generator)           │            (Retry Loop)       (Retry Loop)
+                                          │               │                 │                  │                  │
+                                          ▼               ▼                 ▼                  ▼                  ▼
+                                    [USER APPROVAL] [TECH REVIEW]      [GENERATION]       [VALIDATION]       [AUDITING]
 ```
 
 ### Key Innovations
 
-1. **Separation of Concerns** — Planning (Architect) is completely separate from Coding (Builder)
-2. **Few-Shot Prompting** — Rich examples guide each LLM for consistent outputs
-3. **Dual Validation** — Fast deterministic syntax checks + deep semantic AI audit
-4. **Smart Retry Optimization** — Only regenerates files with errors, saving tokens
-5. **Production-Ready Output** — Complete with README, proper structure, and documentation
+1. **Human-in-the-Loop Workflow** — You review and approve Features and Tech Stack before a single line of code is written.
+2. **Dynamic Structure Generator** — Change your mind about the tech stack? The **Generator** button instantly re-architects the file structure (e.g., swapping `index.html` for `app.py`) based on your input.
+3. **Smart Validation** — Dual-layer validation (Syntax + Semantic) ensures code actually runs.
+4. **Token-Efficient Retries** — Only regenerates files with specific errors.
+5. **Production-Ready Output** — Delivers clean, flat file structures optimized for immediate use.
 
 ---
-
-## 🏗️ Architecture
-
-<p align="center">
-  <img src="Builder_Architecture.png" alt="System Architecture" width="100%"/>
-</p>
 
 ### System Components
 
@@ -478,68 +466,36 @@ All settings are managed via environment variables:
 
 ## 🧠 How It Works
 
+
+
 ### Example: Building a Counter App
 
-**User Input:**
-> "Build a counter app with increment, decrement, and reset buttons"
+**1. Init & Analysis**
+- You enter: "Build a counter app with increment, decrement, and reset buttons"
+- **Gatekeeper** validates the request (Scope: HOMEWORK).
 
-**1. Gatekeeper Analysis**
-```json
-{
-  "classification": "HOMEWORK",
-  "confidence": 0.98,
-  "reasoning": "Simple CRUD app with basic JavaScript - perfect scope"
-}
-```
+**2. Architect Blueprint & User Approval**
+- **Architect** proposes features (Counter Display, Buttons) and Design Specs (Purple gradient).
+- **YOU** review these in the "Planning" tab. You can add/remove features or tweak the design.
+- **YOU** approve the features.
 
-**2. Architect Blueprint**
-```json
-{
-  "project_features": [
-    {"name": "Counter Display", "priority": "core"},
-    {"name": "Increment Button", "priority": "core"},
-    {"name": "Keyboard Support", "priority": "enhancement"}
-  ],
-  "design_specs": {
-    "color_scheme": "Purple gradient with white cards",
-    "typography": "Segoe UI, large bold numbers"
-  },
-  "tech_stack": "html_single",
-  "file_structure": [
-    {"name": "index.html", "prompt": "..."}
-  ]
-}
-```
+**3. Tech Stack & Structure Generation**
+- System proposes `html_single`.
+- **YOU** decide you want Python instead. You type "Python Flask" and click **Generator**.
+- **System** automatically updates the file structure to `app.py`, `templates/index.html`, `requirements.txt`.
+- **YOU** approve the tech stack.
 
-**3. Builder Output**
-Complete HTML file with:
-- Styled container
-- Working buttons
-- JavaScript logic
-- Mobile responsive CSS
+**4. Code Generation (The Builder)**
+- **Builder** generates the actual code based on your approved blueprint.
+- Creates `app.py` with Flask routes and `index.html` with Jinja2 templates.
 
-**4. Syntax Guard**
-```
-✓ HTML validation passed
-✓ No CSS brace mismatches
-✓ JavaScript checks passed
-```
+**5. Validation & Audit**
+- **Syntax Guard** checks for Python syntax errors and HTML tag balance.
+- **Auditor** verifies that the "Reset" button actually works and the UI matches the design specs.
 
-**5. Auditor Verification**
-```json
-{
-  "is_approved": true,
-  "semantic_issues": [],
-  "recommendations": ["Consider adding keyboard shortcuts"]
-}
-```
-
-**6. Packager Delivery**
-```
-📦 counter_app_20260204_190000.zip
-├── index.html
-└── README.md
-```
+**6. Delivery**
+- **Packager** zips everything up.
+- You download `project.zip` and run it immediately.
 
 ---
 
@@ -553,11 +509,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
----
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 

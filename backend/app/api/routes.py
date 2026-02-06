@@ -9,6 +9,7 @@ import uuid
 import asyncio
 import json
 from app.core.graph import run_builder_pipeline, run_builder_pipeline_phase2, run_builder_pipeline_phase3
+from app.nodes.architect import refine_file_structure
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -43,6 +44,17 @@ class TechStackApprovalRequest(BaseModel):
     approved_file_structure: List[Dict[str, Any]]
     approved_asset_manifest: List[Dict[str, Any]]
     user_requirements: Optional[str] = None
+
+
+class GenerateStructureRequest(BaseModel):
+    """Request to generate file structure from tech stack."""
+    tech_stack: str
+
+
+class GenerateStructureResponse(BaseModel):
+    """Response with new file structure."""
+    file_structure: List[Dict[str, Any]]
+    message: str
 
 
 class ApprovalResponse(BaseModel):
@@ -385,6 +397,38 @@ async def execute_build_phase3(task_id: str, state: dict):
             "error_message": str(e),
             "is_complete": True
         })
+
+
+@router.post("/build/{task_id}/generate-structure", response_model=GenerateStructureResponse)
+async def generate_structure(task_id: str, request: GenerateStructureRequest):
+    """
+    Generate a new file structure based on user-provided tech stack.
+    """
+    if task_id not in active_tasks:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    task_data = active_tasks[task_id]
+    
+    # Get project context from state
+    state = task_data.get("state", {})
+    user_query = state.get("user_query")
+    project_features = state.get("approved_features") or state.get("project_features", [])
+    
+    if not user_query:
+        raise HTTPException(status_code=400, detail="User query not found in task state")
+        
+    logger.info(f"[API] Generating structure for task {task_id} with stack: {request.tech_stack}")
+    
+    # Generate new structure
+    new_structure = refine_file_structure(user_query, project_features, request.tech_stack)
+    
+    if not new_structure:
+        raise HTTPException(status_code=500, detail="Failed to generate file structure")
+        
+    return GenerateStructureResponse(
+        file_structure=new_structure,
+        message="File structure updated successfully"
+    )
 
 
 @router.get("/build/{task_id}/status", response_model=BuildStatus)

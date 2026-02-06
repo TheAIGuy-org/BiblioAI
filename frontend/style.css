@@ -620,6 +620,24 @@ textarea {
     border-color: rgba(59, 130, 246, 0.3);
 }
 
+/* Input with Button */
+.input-with-btn {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.input-with-btn input {
+    flex: 1;
+}
+
+.secondary-btn.small-btn {
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+    height: 100%;
+    margin: 0;
+}
+
 /* Tech Stack Card */
 .tech-stack-card {
     padding: 1rem;

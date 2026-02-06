@@ -5,6 +5,7 @@ Creates the blueprint - file structure, tech stack, asset manifest, and feature 
 from app.models.state import BuilderState
 from app.core.llm_factory import llm_factory
 from app.prompts.architect_prompts import build_architect_prompt
+from app.prompts.structure_prompts import build_structure_refinement_prompt
 from app.utils.logger import get_logger
 from app.utils.parsers import parse_llm_json, validate_json_schema
 
@@ -89,3 +90,28 @@ def architect_node(state: BuilderState) -> BuilderState:
         state["error_message"] = f"Blueprint generation failed: {str(e)}"
         state["is_complete"] = True
         return state
+
+
+def refine_file_structure(user_query: str, project_features: list, tech_stack: str):
+    """
+    Helper function to regenerate file structure based on new tech stack.
+    Used by the API endpoint directly.
+    """
+    logger.info(f"[ARCHITECT] Refining structure for stack: {tech_stack}")
+    
+    try:
+        llm = llm_factory.get_architect_llm()
+        prompt = build_structure_refinement_prompt(
+            user_query,
+            project_features,
+            tech_stack
+        )
+        
+        response = llm.invoke(prompt)
+        result = parse_llm_json(response.content)
+        
+        return result.get("file_structure", [])
+        
+    except Exception as e:
+        logger.error(f"[ARCHITECT] Refinement failed: {str(e)}")
+        return []

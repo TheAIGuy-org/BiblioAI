@@ -30,6 +30,7 @@ const elements = {
     techStackOptions: document.getElementById('tech-stack-options'),
     featuresEditableBadge: document.getElementById('features-editable-badge'),
     designEditableBadge: document.getElementById('design-editable-badge'),
+    generateStructureBtn: document.getElementById('generate-structure-btn'),
 };
 
 // Store blueprint data globally
@@ -78,6 +79,7 @@ elements.approveFeaturesBtn?.addEventListener('click', approveFeatures);
 elements.approveTechstackBtn?.addEventListener('click', approveTechstack);
 elements.editFeaturesBtn?.addEventListener('click', toggleEditMode);
 elements.addFeatureBtn?.addEventListener('click', addNewFeature);
+elements.generateStructureBtn?.addEventListener('click', generateStructure);
 
 // Tab switching
 elements.tabs.forEach(tab => {
@@ -415,6 +417,51 @@ async function approveFeatures() {
         }
     } catch (error) {
         addLog(`Error: ${error.message}`, 'error');
+    }
+}
+
+
+async function generateStructure() {
+    if (!currentTaskId) return;
+
+    const techStackInput = document.getElementById('tech-stack-input');
+    const newTechStack = techStackInput.value.trim();
+
+    if (!newTechStack) {
+        addLog('⚠️ Please enter a tech stack first.', 'warning');
+        return;
+    }
+
+    const btn = elements.generateStructureBtn;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+    btn.disabled = true;
+
+    addLog(`Generating file structure for: ${newTechStack}...`, 'info');
+
+    try {
+        const response = await fetch(`${API_BASE}/build/${currentTaskId}/generate-structure`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tech_stack: newTechStack
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            blueprintData.file_structure = data.file_structure;
+            renderEditableFileStructure();
+            addLog('✅ File structure updated successfully!', 'success');
+        } else {
+            addLog(`Error: ${data.detail}`, 'error');
+        }
+    } catch (error) {
+        addLog(`Error: ${error.message}`, 'error');
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
     }
 }
 
