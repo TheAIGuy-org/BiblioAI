@@ -523,15 +523,30 @@ function collectApprovedFeatures() {
         editableCards.forEach(card => {
             const nameInput = card.querySelector('.feature-name-input');
             const descInput = card.querySelector('.feature-desc-input');
-            const priority = card.dataset.priority || 'core';
-
+            
+            // If in edit mode (has inputs), read from inputs
             if (nameInput && nameInput.value.trim()) {
+                const priority = card.dataset.priority || 'core';
                 features.push({
                     name: nameInput.value.trim(),
                     description: descInput?.value.trim() || '',
                     priority: priority,
                     user_benefit: ''
                 });
+            } else {
+                // Not in edit mode, read from rendered card content
+                const nameSpan = card.querySelector('.feature-name');
+                const descPara = card.querySelector('.feature-description');
+                const priority = card.dataset.priority || 'core';
+                
+                if (nameSpan && nameSpan.textContent.trim()) {
+                    features.push({
+                        name: nameSpan.textContent.trim(),
+                        description: descPara?.textContent.trim() || '',
+                        priority: priority,
+                        user_benefit: ''
+                    });
+                }
             }
         });
         if (features.length > 0) {
@@ -609,8 +624,12 @@ function disableEditMode() {
         input.classList.add('hidden');
     });
 
+    // Collect edited features and update blueprintData to persist changes
+    const updatedFeatures = collectApprovedFeatures();
+    blueprintData.project_features = updatedFeatures;
+
     // Re-render features as cards
-    renderProjectFeatures(collectApprovedFeatures());
+    renderProjectFeatures(updatedFeatures);
 }
 
 function createEditableFeatureCard(feature, index) {
@@ -789,6 +808,8 @@ function renderProjectFeatures(features) {
 function createFeatureCard(feature, priority) {
     const card = document.createElement('div');
     card.className = `feature-card ${priority}`;
+    card.dataset.priority = priority;
+    card.dataset.editable = 'true'; // Mark so collectApprovedFeatures can read it
     card.innerHTML = `
         <div class="feature-header">
             <span class="feature-name">${feature.name}</span>

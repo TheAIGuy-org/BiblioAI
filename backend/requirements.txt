@@ -16,6 +16,7 @@ groq
 # Utilities
 python-dotenv
 python-multipart
+beautifulsoup4
 
 # Testing
 pytest
