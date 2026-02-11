@@ -54,9 +54,22 @@ def scope_gatekeeper_node(state: BuilderState) -> BuilderState:
         return state
         
     except Exception as e:
-        logger.error(f"[GATEKEEPER] Error: {str(e)}")
+        error_msg = str(e)
+        logger.error(f"[GATEKEEPER] Error: {error_msg}")
+        
+        # Friendly error messages for common issues
+        if "401" in error_msg or "AuthenticationError" in error_msg:
+            friendly_msg = "Authentication failed. Please check your GROQ_API_KEY in .env."
+        elif "429" in error_msg:
+            friendly_msg = "Rate limit exceeded. Please try again later."
+        elif "Connection error" in error_msg or "ConnectError" in error_msg:
+            friendly_msg = "Connection failed. Check internet connection or firewall settings."
+        else:
+            friendly_msg = f"Gatekeeper Error: {error_msg}"
+
         state["is_feasible"] = False
-        state["error_message"] = f"Classification failed: {str(e)}"
+        state["refusal_reason"] = friendly_msg # Use refusal reason to show in UI
+        state["error_message"] = friendly_msg
         state["is_complete"] = True
         return state
 
