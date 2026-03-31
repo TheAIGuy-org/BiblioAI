@@ -6,12 +6,12 @@ pydantic-settings
 
 # LangChain & LangGraph
 langchain
-langchain-groq
+langchain-openai
 langgraph
 langchain-core
 
-# LLM Providers (ONLY GROQ)
-groq
+# LLM Providers (Azure OpenAI)
+openai
 
 # Utilities
 python-dotenv

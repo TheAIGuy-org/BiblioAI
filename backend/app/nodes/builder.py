@@ -92,7 +92,7 @@ def builder_node(state: BuilderState) -> BuilderState:
                 syntax_errors=state["syntax_errors"] if state["retry_count"] > 0 else None
             )
             
-            # Generate code using Groq
+            # Generate code using Azure OpenAI
             response = llm.invoke(prompt)
             code = response.content
             

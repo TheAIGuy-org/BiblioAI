@@ -9,15 +9,11 @@ from typing import Optional
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
-    # API Keys
-    GROQ_API_KEY: str
-    
-    # Model Configuration (ALL GROQ MODELS as per blueprint)
-    GATEKEEPER_MODEL: str = "llama-3.3-70b-versatile"
-    ARCHITECT_MODEL: str = "llama-3.3-70b-versatile"
-    BUILDER_MODEL: str = "openai/gpt-oss-120b"  # Groq's coding specialist
-    # AUDITOR_MODEL: str = "llama-3.3-70b-versatile"
-    AUDITOR_MODEL: str = "openai/gpt-oss-120b"
+    # Azure OpenAI Configuration
+    AZURE_OPENAI_KEY: str
+    AZURE_OPENAI_ENDPOINT: str
+    AZURE_OPENAI_API_VERSION: str = "2025-01-01-preview"
+    AZURE_OPENAI_MODEL: str = "gpt-4o"
     
     # Rate Limiting
     BUILDER_COOLDOWN_SECONDS: int = 2

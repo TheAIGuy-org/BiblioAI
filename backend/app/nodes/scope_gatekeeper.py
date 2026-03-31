@@ -59,7 +59,7 @@ def scope_gatekeeper_node(state: BuilderState) -> BuilderState:
         
         # Friendly error messages for common issues
         if "401" in error_msg or "AuthenticationError" in error_msg:
-            friendly_msg = "Authentication failed. Please check your GROQ_API_KEY in .env."
+            friendly_msg = "Authentication failed. Please check your AZURE_OPENAI_KEY in .env."
         elif "429" in error_msg:
             friendly_msg = "Rate limit exceeded. Please try again later."
         elif "Connection error" in error_msg or "ConnectError" in error_msg:
